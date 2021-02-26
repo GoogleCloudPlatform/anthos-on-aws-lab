@@ -1,0 +1,115 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: multicloud.cluster.gke.io/v1
+kind: AWSCluster
+metadata:
+  name: app-cluster
+spec:
+  region: ${ANTHOS_AWS_REGION}
+  authentication:
+    awsIAM:
+      adminIdentityARNs:
+      - ${ANTHOS_AWS_ADMIN_IAM_ARN}
+  networking:
+    vpcID: ${ANTHOS_AWS_VPC_ID}
+    serviceAddressCIDRBlocks:
+    - 10.1.0.0/16
+    podAddressCIDRBlocks:
+    - 10.2.0.0/16
+    serviceLoadBalancerSubnetIDs:
+    - ${ANTHOS_AWS_PUBLIC_SUBNET_ID_0}
+    - ${ANTHOS_AWS_PUBLIC_SUBNET_ID_1}
+    - ${ANTHOS_AWS_PUBLIC_SUBNET_ID_2}
+  controlPlane:
+    version: ${ANTHOS_AWS_CLUSTER_VERSION}
+    keyName: ${ANTHOS_AWS_MGMT_ID}-keypair
+    instanceType: t3.medium
+    iamInstanceProfile: ${ANTHOS_AWS_MGMT_ID}-controlplane
+    securityGroupIDs:
+    - ${ANTHOS_AWS_CLUSTER_SG_ID}
+    subnetIDs:
+    - ${ANTHOS_AWS_PRIVATE_SUBNET_ID_0}
+    - ${ANTHOS_AWS_PRIVATE_SUBNET_ID_1}
+    - ${ANTHOS_AWS_PRIVATE_SUBNET_ID_2}
+    rootVolume:
+      sizeGiB: 20
+    etcd:
+      mainVolume:
+        sizeGiB: 10
+    databaseEncryption:
+      kmsKeyARN: ${ANTHOS_AWS_DATABASE_KMS_KEY_ARN}
+    hub:
+      membershipName: projects/${PROJECT_ID}/locations/global/memberships/app-cluster
+---
+apiVersion: multicloud.cluster.gke.io/v1
+kind: AWSNodePool
+metadata:
+  name: app-cluster-pool-0
+spec:
+  clusterName: app-cluster
+  version: ${ANTHOS_AWS_CLUSTER_VERSION}
+  region: ${ANTHOS_AWS_REGION}
+  subnetID: ${ANTHOS_AWS_PRIVATE_SUBNET_ID_0}
+  minNodeCount: 1
+  maxNodeCount: 3
+  instanceType: t3.medium
+  keyName: ${ANTHOS_AWS_MGMT_ID}-keypair
+  iamInstanceProfile: ${ANTHOS_AWS_MGMT_ID}-nodepool
+  maxPodsPerNode: 100
+  securityGroupIDs:
+  - ${ANTHOS_AWS_CLUSTER_SG_ID}
+  rootVolume:
+    sizeGiB: 10
+---
+apiVersion: multicloud.cluster.gke.io/v1
+kind: AWSNodePool
+metadata:
+  name: app-cluster-pool-1
+spec:
+  clusterName: app-cluster
+  version: ${ANTHOS_AWS_CLUSTER_VERSION}
+  region: ${ANTHOS_AWS_REGION}
+  subnetID: ${ANTHOS_AWS_PRIVATE_SUBNET_ID_1}
+  minNodeCount: 1
+  maxNodeCount: 3
+  instanceType: t3.medium
+  keyName: ${ANTHOS_AWS_MGMT_ID}-keypair
+  iamInstanceProfile: ${ANTHOS_AWS_MGMT_ID}-nodepool
+  maxPodsPerNode: 100
+  securityGroupIDs:
+  - ${ANTHOS_AWS_CLUSTER_SG_ID}
+  rootVolume:
+    sizeGiB: 10
+---
+apiVersion: multicloud.cluster.gke.io/v1
+kind: AWSNodePool
+metadata:
+  name: app-cluster-pool-2
+spec:
+  clusterName: app-cluster
+  version: ${ANTHOS_AWS_CLUSTER_VERSION}
+  region: ${ANTHOS_AWS_REGION}
+  subnetID: ${ANTHOS_AWS_PRIVATE_SUBNET_ID_2}
+  minNodeCount: 1
+  maxNodeCount: 3
+  instanceType: t3.medium
+  keyName: ${ANTHOS_AWS_MGMT_ID}-keypair
+  iamInstanceProfile: ${ANTHOS_AWS_MGMT_ID}-nodepool
+  maxPodsPerNode: 100
+  securityGroupIDs:
+  - ${ANTHOS_AWS_CLUSTER_SG_ID}
+  rootVolume:
+    sizeGiB: 10
